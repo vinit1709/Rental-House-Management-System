@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import axios from 'axios'
 import os from 'os';
 import useragent from 'useragent';
+import { oauth2Client } from '../utils/googleConfig.js';
 
 
 // Get local IP address
@@ -85,14 +86,20 @@ export const register = async (req, res) => {
 
         delete user._doc.password;
 
-        await axios.post(`${process.env.BACK_GATE_URL}/notification/send-email`, {
+        try {
+            await axios.post(`${process.env.BACK_GATE_URL}/notification/send-email`, {
             to: user.email,
             subject: "Welcome to Rental House Management System",
             templateName: "registrationSuccess",
             data:{
-                name: user.name
+                name: user.name,
+                email: user.email,
+                date: new Date().toLocaleString(),
             }
         });
+        } catch (emailError) {
+            console.warn("Email notification failed:", emailError.message);
+        }
 
         return res.
         status(201)
@@ -175,6 +182,60 @@ export const login = async (req, res) => {
         })
     } catch (error) {
         console.error("Error during login:", error.message);
+        res.status(500).json({ message: error.message });
+    }
+}
+
+// Google Login
+// POST http://localhost:3001/auth/google
+export const googleAuth = async (req, res) => {
+    try {
+        const { code } = req.query;
+        const googleResponse = await oauth2Client.getToken(code);
+        oauth2Client.setCredentials(googleResponse.tokens);
+
+        const userResponse = await axios.get(`https://www.googleapis.com/oauth2/v2/userinfo?alt=json&access_token=${googleResponse.tokens.access_token}`);
+        const { email, name } = userResponse.data;
+
+        let user = await User.findOne({ email });
+        if (!user) {
+            // If user does not exist, create a new user with a random password
+            const randomPassword = Math.random().toString(36).slice(-8);
+            user = await authService.createUser({ name, email, password: randomPassword, role: 'tenant', phone: '0000000000' });
+        }
+        // Generate Access token & Refresh token
+        const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+        const options = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: 'strict',
+        };
+
+        try {
+            await axios.post(`${process.env.BACK_GATE_URL}/notification/send-email`, {
+            to: user.email,
+            subject: "Google authentication successfully!!",
+            templateName: "googleSuccess",
+            data:{
+                name: user.name,
+                email: user.email,
+                date: new Date().toLocaleString(),
+            }
+        });
+        } catch (emailError) {
+            console.warn("Email notification failed:", emailError.message);
+        }
+
+        return res
+        .status(200)
+        .cookie("refreshToken", refreshToken, options)
+        .cookie("accessToken", accessToken, options)
+        .json({
+            message: "Google authentication successfully...",
+            user: user, accessToken
+        });
+    } catch (error) {
+        console.error("Error during google login:", error.message);
         res.status(500).json({ message: error.message });
     }
 }
@@ -319,7 +380,7 @@ export const updateProfile = async (req, res) => {
     }
 
     try {
-        const { name, email, phone } = req.body;
+        const { name, phone, role } = req.body;
 
         const user = await User.findById(req.user._id);
         if (!user) {
@@ -328,8 +389,8 @@ export const updateProfile = async (req, res) => {
 
         // Update user details
         user.name = name || user.name;
-        user.email = email || user.email;
         user.phone = phone || user.phone;
+        user.role = role || user.role;
 
         await user.save();
 

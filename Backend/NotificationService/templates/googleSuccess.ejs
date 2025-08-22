@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Registration Successful</title>
+    <title>Google Account Authentication Successful</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -22,9 +22,6 @@
         color: #2c3e50;
         margin-bottom: 10px;
       }
-      h4 {
-        color: #34495e;
-      }
       p {
         line-height: 1.6;
       }
@@ -38,6 +35,25 @@
         margin: 4px 0;
         font-size: 14px;
       }
+      .google-logo {
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 2px 10px rgba(66,133,244,0.15);
+      }
+      .note {
+        background: #fffbe6;
+        border-left: 5px solid #fbbc05;
+        padding: 14px 18px;
+        border-radius: 6px;
+        margin: 18px 0;
+        color: #b08500;
+        font-size: 15px;
+      }
       .footer {
         margin-top: 30px;
         font-size: 12px;
@@ -48,20 +64,24 @@
   </head>
   <body>
     <div class="container">
-      <h2>Welcome, <%= name %>!</h2>
+      <h2>Hello, <%= name %>!</h2>
       <p>
-        Your registration was <strong>successful</strong>. We’re excited to have you join the Rental House Management System community!
+        You have successfully <strong>authenticate</strong> using your Google account. We’re excited to have you join the Rental House Management System community!
       </p>
 
       <div class="details">
-        <p style="text-align: center; color: #2c3e50;"><strong>Registration Details</strong></p>
+        <p style="text-align: center; color: #2c3e50;"><strong>Account Details</strong></p>
         <p><strong>Name:</strong> <%= name %></p>
         <p><strong>Email:</strong> <%= email %></p>
-        <p><strong>Registered On:</strong> <%= date || 'N/A' %></p>
+        <p><strong>Date:</strong> <%= date || 'N/A' %></p>
+      </div>
+
+      <div class="note">
+        <strong>Note:</strong> For the best experience, please update your profile details (such as <b>role</b> and <b>phone number</b>) after authentication. We use default values for these fields when you authenticate with Google.
       </div>
 
       <p>
-        You can now log in and start managing your rental experience with us. If you have any questions or need help, our support team is here for you.
+        Thank you for choosing Rental House Management System! If you have any questions or need help, our support team is here for you.
       </p>
       <p>Thank you for joining us!</p>
       <p>Best regards,<br />The Rental House Management Team</p>
