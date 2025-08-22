@@ -6,13 +6,13 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "Name is required"],
       trim: true,
       minlength: [3, "Name must be at least 3 characters long"],
     },
     email: {
       type: String,
-      required: true,
+      required: [true, "Email is required"],
       unique: true,
       lowercase: true,
       trim: true,
@@ -20,25 +20,29 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      required: true,
+      required: [true, "Phone number is required"],
       unique: true,
       trim: true,
       match: [/^\d{10}$/, "Please fill a valid Phone number"],
     },
     password: {
       type: String,
-      required: true,
+      required: [true, "Password is required"],
       select: false,
       minlength: [6, "Password must be at least 6 characters long"],
     },
     role: {
       type: String,
       enum: ["landlord", "tenant", "admin"],
-      required: true,
+      required: [true, "Role is required"],
     },
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    isActive:{
+      type: Boolean,
+      default: true,
     },
     createdAt: {
       type: Date,
@@ -48,9 +52,12 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.methods.generateAuthToken = async function () {
- const token = jwt.sign({ _id: this._id, email: this.email }, process.env.JWT_SECRET, { expiresIn: "24h" });
- return token;
+userSchema.methods.generateAccessToken = function () {
+ return jwt.sign({ _id: this._id, email: this.email }, process.env.JWT_SECRET, { expiresIn: "15m" });
+}
+
+userSchema.methods.generateRefreshToken = function () {
+ return jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 }
 
 userSchema.methods.comparePassword = async function (password) {
