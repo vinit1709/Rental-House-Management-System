@@ -64,7 +64,8 @@ export const register = async (req, res) => {
     }
 
     try {
-        const { name, email, phone, password, role } = req.body;
+        // const { name, email, phone, password, role } = req.body;
+        const { name, email, password, role } = req.body;
 
         // Check if user already exists
         const existingUser = await User.findOne({ email });
@@ -73,7 +74,8 @@ export const register = async (req, res) => {
         }
 
         // Create new user
-        const user = await authService.createUser({ name, email, phone, password, role });
+        // const user = await authService.createUser({ name, email, phone, password, role });
+        const user = await authService.createUser({ name, email, password, role });
 
         // Generate Access token & Refresh token
         const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);

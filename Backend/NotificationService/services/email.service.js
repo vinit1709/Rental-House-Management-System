@@ -22,7 +22,7 @@ export const sendEmail = async ({to, subject, templateName, data}) => {
     const html = await ejs.renderFile(templatePath, data);
 
     const mailOptions = {
-      from: process.env.HOST_EMAIL,
+      from: `"Rental House Management System" <${process.env.HOST_EMAIL}>`,
       to,
       subject,
       html,

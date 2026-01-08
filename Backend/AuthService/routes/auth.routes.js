@@ -9,7 +9,7 @@ const router = Router();
 router.post('/register',
     body("name").isLength({ min: 3 }).withMessage('Name must be at least 3 characters long'),
     body("email").isEmail().withMessage("Please fill a valid email address"),
-    body("phone").isMobilePhone().withMessage("Please fill a valid phone number"),
+    // body("phone").isMobilePhone().withMessage("Please fill a valid phone number"),
     body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
     body("role").isLength({ min: 5 }).withMessage("Please select role"),
     authController.register);
