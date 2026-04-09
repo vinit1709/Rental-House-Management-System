@@ -9,27 +9,46 @@ import User from '../models/user.model.js';
 // If the token is invalid or expired, it returns an error response
 export const authUser = async (req, res, next) => {
     try {
-        const token = req.cookies?.accessToken;
+        // console.log("cookies:", req.cookies);
+
+        // const refreshToken = req.cookies.refreshToken;
+        const accessToken = req.cookies.accessToken;
+
+        // console.log("refreshToken:", refreshToken);
+        // console.log("accessToken:", accessToken);
 
         // Check token present or not?
-        if(!token) {
-            return res.status(401).json({ error: 'Unauthorize User!!' });
+        if(!accessToken) {
+            return res.status(401).json({ message: "Unauthorized!!" });
         }
 
-        // Check token is black listed
-        const isBlackListed = await redisClient.get(token)
+        // Check blacklist (logout / revoked token)
+        const isBlackListed = await redisClient.get(accessToken)
         if (isBlackListed) {
-            res.cookie('accessToken', '', { maxAge: 0 });
-            return res.status(401).json({ error: 'Unauthorize User!!' });
+            res.clearCookie("accessToken");
+            res.clearCookie("refreshToken");
+            return res.status(401).json({ message: "Unauthorized" });
         }
 
-        // Decode token
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decodedToken;
+        // Verify JWT token
+        const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+
+        // Fetch fresh user from DB (IMPORTANT)
+        const user = await User.findById(decodedToken._id).select(
+            "_id name email role isActive"
+        );
+
+        if (!user || user.isActive === false) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        req.user = user;
+
         next();
     } catch (error) {
-        console.error("Authentication error:","accessToken " + error.message);
-        res.clearCookie('accessToken');
-        return res.status(401).json({ error: 'Unauthorize User!!' });
+        console.error("Auth error:", error.message);
+        res.clearCookie("accessToken");
+        res.clearCookie("refreshToken");
+        return res.status(401).json({ message: "Unauthorized" });
     }
 }

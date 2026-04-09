@@ -1,0 +1,36 @@
+{
+  "name": "rental-house-management-system",
+  "version": "1.0.0",
+  "description": "In this project we develop the online house rent management system.\r <br>\r Author - Vinit Patel",
+  "main": "index.js",
+  "scripts": {
+    "auth": "cd Backend/AuthService && npm start",
+    "notification": "cd Backend/NotificationService && npm start",
+    "property": "cd Backend/PropertyService && npm start",
+    "tenant": "cd Backend/TenantService && npm start",
+    "lease": "cd Backend/LeaseService && npm start",
+    "payment": "cd Backend/PaymentService && npm start",
+    "maintenance": "cd Backend/MaintenanceService && npm start",
+    "ai": "cd Backend/AiService && npm start",
+    "gateway": "cd Backend/Gateway && npm start",
+    "client": "cd Frontend/Client && npm run dev",
+    "admin": "cd Frontend/Admin && npm run dev",
+    "dev:backend": "concurrently -n \"GATEWAY,AUTH,PROP,TENANT,LEASE,PAY,MAINT,NOTIFY,AI\" -c \"bgBlue,bgMagenta,bgCyan,bgGreen,bgYellow,bgRed,bgWhite,bgGray,bgBlack\" \"npm run gateway\" \"npm run auth\" \"npm run property\" \"npm run tenant\" \"npm run lease\" \"npm run payment\" \"npm run maintenance\" \"npm run notification\" \"npm run ai\"",
+    "dev:frontend": "concurrently -n \"CLIENT,ADMIN\" -c \"bgGreen.bold,bgBlue.bold\" \"npm run client\" \"npm run admin\"",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vinit1709/Rental-House-Management-System.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vinit1709/Rental-House-Management-System/issues"
+  },
+  "homepage": "https://github.com/vinit1709/Rental-House-Management-System#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

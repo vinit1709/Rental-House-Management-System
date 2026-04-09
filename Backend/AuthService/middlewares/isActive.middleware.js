@@ -19,6 +19,10 @@ export const isActiveUser = async (req, res, next) => {
             return res.status(403).json({ error: "User account is deactivated!!" });
         }
 
+        if (user.isSuspended) {
+            return res.status(403).json({ error: "User account is suspended!!" });
+        }
+
         next();
     } catch (error) {
         console.error("Error in isActiveUser middleware:", error.message);

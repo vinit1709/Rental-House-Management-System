@@ -18,31 +18,90 @@ const userSchema = new mongoose.Schema(
       trim: true,
       match: [/.+\@.+\..+/, "Please fill a valid email address"],
     },
-    // phone: {
-    //   type: String,
-    //   required: [true, "Phone number is required"],
-    //   unique: true,
-    //   trim: true,
-    //   match: [/^\d{10}$/, "Please fill a valid Phone number"],
-    // },
-    password: {
+    phone: {
       type: String,
-      required: [true, "Password is required"],
+      default: null,
+    },
+    password: {
+      type: String || null,
       select: false,
       minlength: [6, "Password must be at least 6 characters long"],
+      default: null,
     },
     role: {
       type: String,
       enum: ["landlord", "tenant", "admin"],
-      required: [true, "Role is required"],
+      default: null,
     },
-    isVerified: {
+    isRoleSelected: {
+      type: Boolean,
+      default: false,
+    },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      require: true,
+      default: "local",
+    },
+    googleId: {
+      type: String,
+      default: null,
+      index: true,
+    },
+    // ==========================================
+    // 🔥 IDENTITY VERIFICATION (KYC) FIELDS 🔥
+    // ==========================================
+    isVerified:{
+      type: Boolean,
+      default: false, // Will turn true when admin approves
+    },
+    verificationStatus: {
+      type: String,
+      enum: ["unverified", "pending", "verified", "rejected"],
+      default: "unverified",
+    },
+    identityDocument: {
+      type: String,
+      default: null, // Will store the Cloudinary URL
+    },
+    idType: {
+      type: String,
+      enum: ["Aadhar", "PAN", "Passport", "Driving License", "Voter ID", "Other"],
+      default: null,
+    },
+    verificationMessage: {
+      type: String,
+      default: null, // Admin notes (e.g., "Image is blurry, please re-upload")
+    },
+    // ==========================================
+    isEmailVerified: {
       type: Boolean,
       default: false,
     },
     isActive:{
       type: Boolean,
       default: true,
+    },
+    isSuspended: {
+      type: Boolean,
+      default: false,
+    },
+    refreshToken: {
+      type: String,
+      default: null,
+    },
+    resetOTP: {
+      type: String,
+      select: false, 
+      default: null,
+    },
+    resetOTPExpiry: {
+      type: Date,
+      default: null,
+    },
+    lastLogin: {
+      type: Date,
+      default: null,
     },
     createdAt: {
       type: Date,
@@ -53,11 +112,11 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.methods.generateAccessToken = function () {
- return jwt.sign({ _id: this._id, email: this.email }, process.env.JWT_SECRET, { expiresIn: "15m" });
+ return jwt.sign({ _id: this._id, role: this.role }, process.env.JWT_SECRET, { expiresIn: "1d" });
 }
 
 userSchema.methods.generateRefreshToken = function () {
- return jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+ return jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 }
 
 userSchema.methods.comparePassword = async function (password) {
